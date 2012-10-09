@@ -1,7 +1,7 @@
-SphinxsearchBundle0.9
-=====================
+About SphinxsearchBundle
+========================
 
-Forked from maninhat bundle. Embedded 0.9.9 SphinxApi instead of 2.0.1.
+
 
 Installation:
 -------------
@@ -11,28 +11,21 @@ Installation:
 
 ### Step 1: Download the bundle
 
-git clone https://github.com/remilemonnier/SphinxsearchBundle0.9.git
+How you actually download the bundle is entirely up to you.  The easiest way is to grab it from [packagist.org](http://packagist.org/).
 
 ### Step 2: Configure the bundle
 
 ``` yaml
 sphinxsearch:
     indexes:
-        - name: %sphinxsearch_index_categories%
-          index:
-              - %sphinxsearch_index_categories%
-          field_weights:
-              title: 10
-              description: 5 
-        - name: %sphinxsearch_index_items%
-          index:
-              - %sphinxsearch_index_items%
-          field_weights:
-              name: 10
-              description: 5 
+        Categories: %sphinxsearch_index_categories%
+        Items:      %sphinxsearch_index_items%
     searchd:
         host:   %sphinxsearch_host%
-        port:   %sphinxsearch_port%        
+        port:   %sphinxsearch_port%
+        socket: %sphinxsearch_socket%
+    indexer:
+        bin:    %sphinxsearch_indexer_bin%
 ```
 
 At least one index must be defined, and you may define as many as you like.
@@ -61,21 +54,23 @@ You can also perform more advanced searches, such as:
 
 ``` php
 $indexesToSearch = array(
-  'items' => array(
-                    'result_offset' => 0,
-                    'result_limit' => 25  //Get only the 25 firts results
-				    'field_weights' => array(
-				      'name' => 2,
-				      'description' => 3,)
-    ) 
+  'Items' => array(
+    'result_offset' => 0,
+    'result_limit' => 25,
+    'field_weights' => array(
+      'Name' => 2,
+      'SKU' => 3,
+    ),
+  ),
+  'Categories' => array(
+    'result_offset' => 0,
+    'result_limit' => 10,
+  ),
 );
 $sphinxSearch = $this->get('search.sphinxsearch.search');
-$sphinxSearch->setFilter('isActive', array(1)); // Get only active products
-$sphinxSearch->SetSortMode ( SPH_SORT_ATTR_DESC, "date" ); // order by date DESC
-$sphinxSearch->SetFilterRange ('price', 0, 10, true); //Items which have price under 10 are exclude
-
-$searchResults = $sphinxSearch->search($text, $indexesToSearch);
-
+$sphinxSearch->setMatchMode(SPH_MATCH_EXTENDED2);
+$sphinxSearch->setFilter('disabled', array(1), true);
+$searchResults = $sphinxSearch->search('search query', $indexesToSearch);
 ```
 
 This would again search `Items` and `Categories` for `search query`, but now `Items` will return up to the first 25 matches and weight the `Name` and `SKU` fields higher than normal, and `Categories` will return up to the first 10.  Note that in order to define a `result_offset` or a `result_limit`, you must explicitly define both values.  Also, this search will use [the Extended query syntax](http://sphinxsearch.com/docs/current.html#extended-syntax), and exclude all results with a `disabled` attribute set to 1.
