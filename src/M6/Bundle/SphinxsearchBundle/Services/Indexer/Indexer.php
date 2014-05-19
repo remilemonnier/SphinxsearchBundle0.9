@@ -73,9 +73,6 @@ class Indexer
 		} else {
 			throw new \RuntimeException(sprintf('Indexes can only be an array or string, %s given.', gettype($indexes)));
 		}
-		/**
-		 * FIXME: Throw an error if no valid indexes were provided?
-		 */
 
 		$indexer = $pb->getProcess();
 		$code = $indexer->run();
